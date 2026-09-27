@@ -327,9 +327,9 @@ The connection form accepts:
 - SQL Server host/IP
 - Database name
 - Target table
-- SQL username / password *(optional)*
-
-If no username/password is provided, the app falls back to **Windows trusted authentication**.
+- DropDown option between Windows Authentication & SQL Authentication
+- SQL authentication  requiresd SQL username / password
+- Windows Authentication does not
 
 ---
 
