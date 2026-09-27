@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="nom_complets_data_operations_portal">Nom complets — Data Operations Portal</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-green: #22c55e;
+      --accent-green-hover: #16a34a;
+      --accent-sky: #0ea5e9;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    #history-view {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-blue-hover);
+    }
+
+    .status-banner {
+      display: none;
+      background-color: rgba(14, 165, 233, 0.1);
+      border: 1px solid var(--accent-sky);
+      color: var(--accent-sky);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px 8px 0 0;
+      border-bottom: none;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn-page {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-page:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    select {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      outline: none;
+      margin-right: 0.5rem;
+    }
+
+    .table-container {
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #0f172a;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .btn-push {
+      background-color: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-push:hover {
+      background-color: var(--accent-green-hover);
+    }
+
+    .btn-push:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .name-meta {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="history-view">
+    <div class="top-bar">
+      <h2 data-i18n="nom_complets">Nom complets</h2>
+      <div style="display: flex; gap: 0.75rem;">
+        <button id="exportBtn" onclick="exportEmptyPrenomRecords()" class="btn-primary" style="background-color: #358739;" data-i18n="export_nom_complets">
+          Export Nom complets
+        </button>
+        <a href="index.html" class="btn-primary" data-i18n="back">Back</a>
+      </div>
+    </div>
+    <div id="history-status-banner" class="status-banner"></div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="history-page-size-select" data-i18n="show_per_page">Show per page:</label>
+        <select id="history-page-size-select" onchange="historyChangePageSize(this.value)">
+          <option value="20" data-i18n="20">20</option>
+          <option value="50" selected data-i18n="50">50</option>
+          <option value="100" data-i18n="100">100</option>
+          <option value="200" data-i18n="200">200</option>
+          <option value="500000" data-i18n="500000"> 500000</option>
+
+        </select>
+        <span id="total-count-display" style="margin-left: 1rem; font-weight: 600; color: var(--text-main);">
+          Total nom complets : 0
+        </span>
+      </div>
+      <div class="control-group">
+        <button id="history-btn-prev" class="btn-page" onclick="historyPrevPage()" disabled data-i18n="prev">&lt; Prev</button>
+        <span id="history-page-info" data-i18n="page_info">Page 1 of 1</span>
+        <button id="history-btn-next" class="btn-page" onclick="historyNextPage()" disabled data-i18n="next">Next &gt;</button>
+        <button id="save-all-btn" class="btn-push" style="margin-left: 0.75rem;" onclick="saveAllOnPage()" data-i18n="push_all_this_page">Push All (this page)</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="nom_complet">NOM COMPLET</th>
+            <th data-i18n="assign_gender">ASSIGN GENDER</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 2rem;" data-i18n="no_empty_prenom_loaded">No empty-prenom records loaded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script>
+    const DOP_STORAGE_KEY = 'dopPortalState';
+    const NOM_COMPLET_STORAGE_KEY = 'dopNomCompletState';
+
+    let historyRecords = [];
+    let historyPage = 1;
+    let historyPageSize = 50;
+
+    function getDbConfig() {
+      try {
+        const raw = localStorage.getItem(DOP_STORAGE_KEY);
+        const saved = raw ? JSON.parse(raw) : null;
+        return (saved && saved.dbConfig) ? saved.dbConfig : {};
+      } catch (e) {
+        console.error('Failed to read DB config:', e);
+        return {};
+      }
+    }
+
+    function saveHistoryState() {
+      try {
+        const state = {
+          historyRecords: historyRecords,
+          historyPage: historyPage,
+          historyPageSize: historyPageSize
+        };
+        localStorage.setItem(NOM_COMPLET_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save nom complet state:', e);
+      }
+    }
+
+    function loadHistoryState() {
+      try {
+        const raw = localStorage.getItem(NOM_COMPLET_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.error('Failed to load nom complet state:', e);
+        return null;
+      }
+    }
+
+    function restoreHistoryState() {
+      const saved = loadHistoryState();
+      if (saved && Array.isArray(saved.historyRecords) && saved.historyRecords.length > 0) {
+        historyRecords = saved.historyRecords;
+        historyPage = saved.historyPage || 1;
+        historyPageSize = saved.historyPageSize || 50;
+        document.getElementById('history-page-size-select').value = String(historyPageSize);
+        renderHistoryTable();
+
+        const banner = document.getElementById('history-status-banner');
+        banner.style.display = 'block';
+        banner.innerHTML = t('nom_complet_restored', { n: historyRecords.length });
+        fetchNomCompletRecords(true);
+      } else {
+        fetchNomCompletRecords();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', restoreHistoryState);
+    window.addEventListener('beforeunload', saveHistoryState);
+
+    function fetchNomCompletRecords(silent) {
+      const banner = document.getElementById('history-status-banner');
+      if (!silent) {
+        banner.style.display = 'block';
+        banner.innerHTML = t('nom_complet_loading');
+      }
+
+      fetch('/api/v1/nom-complet-records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(getDbConfig())
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status !== 'success') {
+          if (!silent) {
+            alert(t('err_load_nom_complets', { msg: res.message }));
+            banner.style.display = 'none';
+          }
+          return;
+        }
+
+        historyRecords = (res.data || []).map(row => ({
+          ...row,
+          // Pre-fill with the engine's suggestion (front/back token scan +
+          // honorifics + Abd-rule + fuzzy), but this is only a suggestion --
+          // the row is not saved until the human clicks "Save".
+          selectedGender: row.selectedGender || row.SUGGESTED_GENDER || null
+        }));
+        historyPage = 1;
+        renderHistoryTable();
+        banner.style.display = 'block';
+        banner.innerHTML = t('nom_complet_loaded', { n: historyRecords.length });
+        saveHistoryState();
+      })
+      .catch(err => {
+        console.error(err);
+        if (!silent) {
+          alert(t('err_load_nom_complets_generic'));
+          banner.style.display = 'none';
+        }
+      });
+    }
+    function updateTotalCountDisplay() {
+      const totalCountEl = document.getElementById('total-count-display');
+      if (totalCountEl) {
+        totalCountEl.innerText = t('total_nom_complets', { n: historyRecords.length });
+      }
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = '';
+      updateTotalCountDisplay();
+
+      if (historyRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; padding: 2rem; color: var(--text-muted);">${t('no_empty_prenom_found')}</td></tr>`;
+        updateHistoryPaginationControls(0);
+        return;
+      }
+
+      const totalPages = Math.ceil(historyRecords.length / historyPageSize);
+      if (historyPage > totalPages) historyPage = totalPages;
+
+      const startIdx = (historyPage - 1) * historyPageSize;
+      const endIdx = startIdx + historyPageSize;
+      const pageSlice = historyRecords.slice(startIdx, endIdx);
+
+      pageSlice.forEach((row, sliceIndex) => {
+        const globalIndex = startIdx + sliceIndex;
+        const tr = document.createElement('tr');
+        const countText = row.COUNT > 1 ? `<span class="name-meta">${t('records_grouped', { n: row.COUNT || 0 })}</span>` : '';
+        const suggestionText = row.SUGGESTED_GENDER
+          ? `<span class="name-meta" title="${(row.SUGGESTED_REASON || '').replace(/"/g, '&quot;')}">${t('suggested_gender', { gender: t(row.SUGGESTED_GENDER === 'FEMININ' ? 'feminin' : 'masculin'), pct: row.SUGGESTED_CONFIDENCE || 0 })}</span>`
+          : (row.SUGGESTED_REASON ? `<span class="name-meta">⚠️ ${row.SUGGESTED_REASON}</span>` : '');
+        tr.innerHTML = `
+          <td>
+            <div>${row.NOM_COMPLET || ''}</div>
+            ${countText}
+            ${suggestionText}
+          </td>
+          <td>
+            <select id="select-${globalIndex}" onchange="updateRowGender(${globalIndex}, this.value)">
+              <option value="" disabled hidden ${!row.selectedGender ? 'selected' : ''}>${t('select')}</option>
+              <option value="MASCULIN" ${row.selectedGender === 'MASCULIN' ? 'selected' : ''}>${t('masculin')}</option>
+              <option value="FEMININ" ${row.selectedGender === 'FEMININ' ? 'selected' : ''}>${t('feminin')}</option>
+            </select>
+            <button id="save-${globalIndex}" class="btn-push" ${row.selectedGender ? '' : 'disabled'} onclick="saveSingle(${globalIndex})">${t('push')}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateHistoryPaginationControls(totalPages);
+    }
+
+    function updateRowGender(globalIndex, value) {
+      if (historyRecords[globalIndex]) {
+        historyRecords[globalIndex].selectedGender = value;
+        const saveBtn = document.getElementById(`save-${globalIndex}`);
+        if (saveBtn) saveBtn.disabled = !value;
+        saveHistoryState();
+      }
+    }
+
+    function historyChangePageSize(size) {
+      historyPageSize = parseInt(size, 10);
+      historyPage = 1;
+      renderHistoryTable();
+      saveHistoryState();
+    }
+
+    function historyPrevPage() {
+      if (historyPage > 1) {
+        historyPage--;
+        renderHistoryTable();
+        saveHistoryState();
+      }
+    }
+
+    function historyNextPage() {
+      const totalPages = Math.ceil(historyRecords.length / historyPageSize);
+      if (historyPage < totalPages) {
+        historyPage++;
+        renderHistoryTable();
+        saveHistoryState();
+      }
+    }
+
+    function updateHistoryPaginationControls(totalPages) {
+      const btnPrev = document.getElementById('history-btn-prev');
+      const btnNext = document.getElementById('history-btn-next');
+      const pageInfo = document.getElementById('history-page-info');
+
+      pageInfo.innerText = t('page_info', { page: totalPages === 0 ? 0 : historyPage, total: totalPages });
+      btnPrev.disabled = historyPage <= 1;
+      btnNext.disabled = historyPage >= totalPages || totalPages === 0;
+    }
+
+    function saveSingle(globalIndex) {
+      const row = historyRecords[globalIndex];
+      if (!row || !row.selectedGender) {
+        alert(t('err_select_gender'));
+        return;
+      }
+      if (!Array.isArray(row.ROW_IDS) || row.ROW_IDS.length === 0) {
+        alert(t('err_no_row_ids'));
+        return;
+      }
+
+      const payload = {
+        ...getDbConfig(),
+        row_ids: row.ROW_IDS,
+        gender: row.selectedGender
+      };
+
+      fetch('/api/v1/save-staging-gender', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_save_gender', { msg: data.message }));
+          return;
+        }
+
+        historyRecords.splice(globalIndex, 1);
+        renderHistoryTable();
+
+        const banner = document.getElementById('history-status-banner');
+        banner.style.display = 'block';
+        banner.innerHTML = t('saved_nom_complet', { nomComplet: row.NOM_COMPLET, gender: t(row.selectedGender === 'FEMININ' ? 'feminin' : 'masculin'), n: row.ROW_IDS.length });
+        saveHistoryState();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_save_gender_generic'));
+      });
+    }
+    async function saveAllOnPage() {
+      const saveAllBtn = document.getElementById('save-all-btn');
+      const startIdx = (historyPage - 1) * historyPageSize;
+      const endIdx = Math.min(startIdx + historyPageSize, historyRecords.length);
+
+      // Collect only the rows visible on THIS page that have a gender selected
+      // AND have database ids to save -- in DESCENDING index order, so that
+      // splicing historyRecords after each success never shifts the index of a
+      // row still waiting to be saved.
+      const targets = [];
+      for (let i = endIdx - 1; i >= startIdx; i--) {
+        const row = historyRecords[i];
+        if (row && row.selectedGender && Array.isArray(row.ROW_IDS) && row.ROW_IDS.length > 0) {
+          targets.push(i);
+        }
+      }
+
+      if (targets.length === 0) {
+        alert(t('err_no_rows_selected_ids'));
+        return;
+      }
+
+      saveAllBtn.disabled = true;
+      saveAllBtn.innerText = t('saving_progress', { n: 0, total: targets.length });
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let n = 0; n < targets.length; n++) {
+        const globalIndex = targets[n];
+        const row = historyRecords[globalIndex];
+
+        const payload = {
+          ...getDbConfig(),
+          row_ids: row.ROW_IDS,
+          gender: row.selectedGender
+        };
+
+        try {
+          const res = await fetch('/api/v1/save-staging-gender', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            historyRecords.splice(globalIndex, 1);
+            successCount++;
+          } else {
+            failCount++;
+            console.error('Save All: failed for', row.NOM_COMPLET, data.message);
+          }
+        } catch (err) {
+          failCount++;
+          console.error('Save All: failed for', row.NOM_COMPLET, err);
+        }
+
+        saveAllBtn.innerText = t('saving_progress', { n: n + 1, total: targets.length });
+      }
+
+      renderHistoryTable();
+      saveHistoryState();
+
+      const banner = document.getElementById('history-status-banner');
+      banner.style.display = 'block';
+      banner.innerHTML = failCount
+        ? t('push_all_nom_complet_done_failures', { n: successCount, fail: failCount })
+        : t('push_all_nom_complet_done', { n: successCount });
+
+      saveAllBtn.disabled = false;
+      saveAllBtn.innerText = t('push_all_this_page');
+    }
+    function exportEmptyPrenomRecords() {
+      const dbConfig = getDbConfig();
+      if (!dbConfig.database || !dbConfig.table) {
+        alert(t('err_configure_db_first'));
+        return;
+      }
+
+      const exportBtn = document.getElementById('exportBtn');
+      if (exportBtn) exportBtn.disabled = true;
+
+      fetch('/api/v1/export-empty-prenom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbConfig)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (exportBtn) exportBtn.disabled = false;
+        if (res.status !== 'success') {
+          alert(t('err_export_records', { msg: res.message }));
+          return;
+        }
+
+        if (!res.data || res.data.length === 0) {
+          alert(t('no_empty_prenom_export'));
+          return;
+        }
+
+        // Define explicit order: ID, NOM, GENRE
+        const preferredOrder = ['ID', 'NOM', 'PRENOM', 'GENRE'];
+        const allKeys = Object.keys(res.data[0]);
+
+        // Build headers list following the required order
+        const headers = [];
+        preferredOrder.forEach(preferredName => {
+          const match = allKeys.find(k => k.toUpperCase() === preferredName);
+          if (match) headers.push(match);
+        });
+
+        // Include any remaining keys from the API response (excluding PRENOM)
+        allKeys.forEach(k => {
+          if (!headers.includes(k) && k.toUpperCase() !== 'PRENOM') {
+            headers.push(k);
+          }
+        });
+
+        const csvRows = [headers.join(',')];
+
+        res.data.forEach(row => {
+          const values = headers.map(header => {
+            const val = row[header] === null || row[header] === undefined ? '' : String(row[header]);
+            return `"${val.replace(/"/g, '""')}"`;
+          });
+          csvRows.push(values.join(','));
+        });
+
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `empty_prenom_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(err => {
+        if (exportBtn) exportBtn.disabled = false;
+        console.error(err);
+        alert(t('err_export_records_generic'));
+      });
+    }
+
+    onLanguageChange(() => renderHistoryTable());
+  </script>
+</body>
+</html>

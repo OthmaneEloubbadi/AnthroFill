@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page_title">Data Operations Portal</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-red: #ef4444;
+      --accent-red-hover: #dc2626;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-green: #22c55e;
+      --accent-green-hover: #16a34a;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #landing-view {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .landing-title {
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .btn-access {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--accent-red);
+      color: #fff;
+      border: none;
+      padding: 1rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-access:hover {
+      background-color: var(--accent-red-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    #interface-view {
+      display: none;
+      opacity: 0;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      transition: opacity 0.4s ease;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-blue-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--accent-red);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--accent-red-hover);
+    }
+
+    .status-banner {
+      display: none;
+      background-color: rgba(59, 130, 246, 0.1);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px 8px 0 0;
+      border-bottom: none;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn-page {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-page:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .table-container {
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #0f172a;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      outline: none;
+      margin-right: 0.5rem;
+    }
+
+    .btn-push {
+      background-color: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-push:hover {
+      background-color: var(--accent-green-hover);
+    }
+
+    .btn-push:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .btn-push-nom {
+      background-color: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-left: 0.4rem;
+    }
+
+    .btn-push-nom:hover {
+      background-color: var(--accent-blue-hover);
+    }
+
+    .btn-push-nom:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .name-meta {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-card h3 {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.65rem;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 0.65rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border-color);
+    }
+
+    /* ===== Golden Rule Popup Styles ===== */
+    #golden-rule-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+      padding: 1.5rem;
+    }
+
+    .golden-rule-card {
+      background-color: var(--card-bg);
+      border: 2px solid var(--accent-red);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(85, 66, 66, 0.4);
+      animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .golden-rule-card .rule-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent-red);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .golden-rule-card p {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+    }
+
+    .golden-rule-card p strong {
+      color: var(--accent-red);
+    }
+
+    .golden-rule-card .btn-push-nom-inline {
+      background-color: var(--accent-blue);
+      color: #fff;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-block;
+    }
+
+    .golden-rule-card .btn-push-inline {
+      background-color: var(--accent-green);
+      color: #fff;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-block;
+    }
+
+    .golden-rule-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-understand {
+      background-color: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding: 0.85rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-understand:hover {
+      background-color: var(--accent-green-hover);
+    }
+
+    .btn-never-show {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 0.85rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-never-show:hover {
+      background-color: var(--border-color);
+      color: var(--text-main);
+    }
+
+    /* Floating "?" reminder button (bottom-left) */
+    #golden-rule-reminder {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      z-index: 4000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    #golden-rule-reminder:hover {
+      background-color: var(--accent-red-hover);
+      transform: scale(1.08);
+    }
+
+    /* Hide-the-reminder mini option inside the reminder popup */
+    .hide-reminder-row {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-hide-reminder {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-color);
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-hide-reminder:hover {
+      color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="landing-view">
+    <h1 class="landing-title" data-i18n="landing_title">DATABASE OPERATIONS PORTAL</h1>
+    <button class="btn-access" onclick="openInterface()" data-i18n="btn_access">Access Manual Changes</button>
+  </div>
+
+  <div id="interface-view">
+    <div class="top-bar">
+      <h2 data-i18n="review_title">Manual Changes Review</h2>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button id="exportBtn" onclick="exportUnresolvedRecords()" class="btn btn-primary "style="text-decoration: none; display: inline-block; background-color: #358739;" data-i18n="btn_export">
+          Export Nom & Prenom
+      </button>
+        <button type="button" class="btn-danger" id="clear-saved-data-btn" data-i18n="btn_clear_data">
+          Clear Saved Data
+        </button>
+        <a href="manual_history.html" class="btn-primary" style="text-decoration: none; display: inline-block; background-color: rgb(139, 92, 246);" data-i18n="btn_manual_history">Manual History</a>
+        <a href="auto_history.html" class="btn-primary" style="text-decoration: none; display: inline-block; background-color: #f59e0b;" data-i18n="btn_auto_history">Auto History</a>
+        <a href="nom_complets.html" class="btn-primary" style="text-decoration: none; display: inline-block; background-color: #0ea5e9;" data-i18n="btn_noms_complets">Nom complets</a>
+        <button id="autoFillBtn" class="btn-primary" style="background-color: #16a34a;" onclick="autoFillExactMatches()" data-i18n="btn_autofill">Auto-Fill Exact Matches</button>
+        <button id="rewindBtn" class="btn-primary" style="background-color: #dc2626;" onclick="rewindToSnapshot()" data-i18n="btn_rewind" data-i18n-title="rewind_title" title="Instantly resets STAGING + history back to right after the last script run — no need to re-run the 8-minute script.">↺ Rewind</button>
+        <button class="btn-primary" onclick="openDbModal()" data-i18n="btn_run_script">Run Script</button>
+      </div>
+    </div>
+
+    <div id="status-banner" class="status-banner"></div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label for="page-size-select" data-i18n="label_show_per_page">Show per page:</label>
+          <select id="page-size-select" onchange="changePageSize(this.value)">
+            <option value="20" data-i18n="20">20</option>
+            <option value="50" selected data-i18n="50">50</option>
+            <option value="100" data-i18n="100">100</option>
+            <option value="200" data-i18n="200">200</option>
+            <option value="50000000" data-i18n="all"> ALL</option>
+          </select>
+        </div>
+        <span id="total-count-display" style="margin-left: 1rem; font-weight: 600; color: var(--text-main);">
+          Total Unresolved: 0
+        </span>
+    
+      </div>
+
+      <div class="control-group">
+        <button id="btn-prev" class="btn-page" onclick="prevPage()" disabled data-i18n="btn_prev">&lt; Prev</button>
+        <span id="page-info" data-i18n="page_info">Page 1 of 1</span>
+        <button id="btn-next" class="btn-page" onclick="nextPage()" disabled data-i18n="btn_next">Next &gt;</button>
+        <button id="push-all-btn" class="btn-push" style="margin-left: 0.75rem;" onclick="pushAllOnPage()" data-i18n="btn_push_all">Push All (this page)</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_prenom">PRENOM</th>
+            <th data-i18n="th_nom">NOM</th>
+            <th data-i18n="th_assign_gender">ASSIGN GENDER</th>
+          </tr>
+        </thead>
+        <tbody id="records-body">
+          <tr>
+            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;" data-i18n-html="empty_records_html">
+              No unresolved records loaded. Click <strong>Run Script</strong> to execute matching and review unresolved names.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <h3 data-i18n="modal_title">Database Connection Details</h3>
+      <form id="db-form" onsubmit="executePipeline(event)">
+        <div class="form-group">
+          <label for="sql-server" data-i18n="label_sql_server">SQL Server Host IP / Name</label>
+          <input type="text" id="sql-server" placeholder="e.g. 41.248.xxx.xxx,1433" required>
+        </div>
+        <div class="form-group">
+          <label for="sql-db" data-i18n="label_sql_db">Database Name</label>
+          <input type="text" id="sql-db" value="genre_predictionTEMP" required>
+        </div>
+        <div class="form-group">
+          <label for="sql-table" data-i18n="label_sql_table">Target Table</label>
+          <input type="text" id="sql-table" value="dbo.high_sample" required>
+        </div>
+        <div class="form-group">
+          <label for="sql-user" data-i18n="label_sql_user">SQL Username</label>
+          <input type="text" id="sql-user" value="sa" required>
+        </div>
+        <div class="form-group">
+          <label for="sql-pass" data-i18n="label_sql_pass">SQL Password</label>
+          <input type="password" id="sql-pass" placeholder="Enter SA password" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeDbModal()" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="btn-primary" data-i18n="btn_run_fetch">Run Script & Fetch Nulls</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Golden Rule Popup ===== -->
+  <div id="golden-rule-overlay">
+  <div class="golden-rule-card">
+
+    <div class="rule-title" data-i18n-html="golden_rule_title"></div>
+
+    <p data-i18n-html="golden_rule_p1"></p>
+    <p data-i18n-html="golden_rule_p2"></p>
+    <p data-i18n-html="golden_rule_p3"></p>
+    <p data-i18n-html="golden_rule_p4"></p>
+
+    <ul>
+      <li data-i18n-html="golden_rule_li1"></li>
+      <li data-i18n-html="golden_rule_li2"></li>
+    </ul>
+
+    <p data-i18n-html="golden_rule_p5"></p>
+    <p data-i18n-html="golden_rule_p6"></p>
+
+    <div class="golden-rule-actions">
+      <button class="btn-never-show" id="golden-rule-never-btn" data-i18n="golden_rule_never"></button>
+      <button class="btn-understand" id="golden-rule-understand-btn" data-i18n="golden_rule_understand"></button>
+    </div>
+
+  </div>
+</div>
+  <!-- Floating reminder button (bottom-left) -->
+  <button id="golden-rule-reminder" title="Règle d'or — Push nom">⚠</button>
+
+  <script src="i18n.js"></script>
+  <script>
+    let rawRecords = [];
+    let currentPage = 1;
+    let pageSize = 50;
+
+    const STORAGE_KEY = 'dopPortalState';
+    const GOLDEN_RULE_SEEN_KEY = 'dopGoldenRuleSeen';
+    const GOLDEN_RULE_HIDE_REMINDER_KEY = 'dopGoldenRuleHideReminder';
+
+    // ===== Golden Rule Popup Logic =====
+    function showGoldenRulePopup() {
+      document.getElementById('golden-rule-overlay').style.display = 'flex';
+    }
+
+    function hideGoldenRulePopup() {
+      document.getElementById('golden-rule-overlay').style.display = 'none';
+    }
+
+    function initGoldenRule() {
+      const neverShow = localStorage.getItem(GOLDEN_RULE_SEEN_KEY) === 'true';
+      const hideReminder = localStorage.getItem(GOLDEN_RULE_HIDE_REMINDER_KEY) === 'true';
+
+      // If never-show was chosen, don't show the big popup.
+      if (!neverShow) {
+        showGoldenRulePopup();
+      }
+
+      // Always show the bottom-left reminder unless the user completely hid it.
+      if (!hideReminder) {
+        document.getElementById('golden-rule-reminder').style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // "J'ai compris" — close popup, keep reminder available
+      document.getElementById('golden-rule-understand-btn').addEventListener('click', () => {
+        hideGoldenRulePopup();
+      });
+
+      // "Ne plus jamais afficher" — never show big popup again, but keep
+      // the floating reminder unless the user separately hides it.
+      document.getElementById('golden-rule-never-btn').addEventListener('click', () => {
+        localStorage.setItem(GOLDEN_RULE_SEEN_KEY, 'true');
+        hideGoldenRulePopup();
+      });
+
+      // Floating reminder opens the same popup
+      document.getElementById('golden-rule-reminder').addEventListener('click', () => {
+        showGoldenRulePopup();
+        // When opened from the reminder, show the "completely hide" option.
+        ensureHideReminderButton();
+      });
+
+      initGoldenRule();
+    });
+
+    // Adds a "completely hide this reminder" button inside the popup,
+    // shown only when the popup is opened via the floating reminder.
+    function ensureHideReminderButton() {
+      if (document.getElementById('hide-reminder-row')) return;
+
+      const row = document.createElement('div');
+      row.id = 'hide-reminder-row';
+      row.className = 'hide-reminder-row';
+      row.innerHTML = `<button class="btn-hide-reminder" id="hide-reminder-btn">${t('golden_rule_hide_reminder')}</button>`;
+
+      document.querySelector('.golden-rule-card').appendChild(row);
+
+      document.getElementById('hide-reminder-btn').addEventListener('click', () => {
+        localStorage.setItem(GOLDEN_RULE_HIDE_REMINDER_KEY, 'false'); // i set it to false for security reasons, if you want it to never be seen again set it to true 
+        document.getElementById('golden-rule-reminder').style.display = 'none';
+        hideGoldenRulePopup();
+      });
+    }
+
+    // ===== Existing app logic =====
+    function saveState() {
+      try {
+        const state = {
+          dbConfig: getDbConfig(),
+          rawRecords: rawRecords,
+          currentPage: currentPage,
+          pageSize: pageSize,
+          interfaceOpen: document.getElementById('interface-view').style.display === 'block'
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save session state:', e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.error('Failed to load saved session state:', e);
+        return null;
+      }
+    }
+
+    function restoreState() {
+      const saved = loadState();
+      if (!saved) return;
+
+      if (saved.dbConfig) {
+        document.getElementById('sql-server').value = saved.dbConfig.server || '';
+        document.getElementById('sql-db').value = saved.dbConfig.database || 'genre_predictionTEMP';
+        document.getElementById('sql-table').value = saved.dbConfig.table || 'dbo.high_sample';
+        document.getElementById('sql-user').value = saved.dbConfig.user || 'sa';
+        document.getElementById('sql-pass').value = saved.dbConfig.password || '';
+      }
+
+      if (saved.interfaceOpen) {
+        document.getElementById('landing-view').style.display = 'none';
+        const customInterface = document.getElementById('interface-view');
+        customInterface.style.display = 'block';
+        customInterface.style.opacity = '1';
+
+        rawRecords = Array.isArray(saved.rawRecords) ? saved.rawRecords : [];
+        currentPage = saved.currentPage || 1;
+        pageSize = saved.pageSize || 50;
+        document.getElementById('page-size-select').value = String(pageSize);
+
+        renderTable();
+
+        const banner = document.getElementById('status-banner');
+        if (rawRecords.length > 0) {
+          banner.style.display = 'block';
+          banner.innerHTML = t('session_restored', { n: rawRecords.length });
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', restoreState);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveState();
+    });
+    window.addEventListener('beforeunload', saveState);
+
+    function openInterface() {
+      const landing = document.getElementById('landing-view');
+      const customInterface = document.getElementById('interface-view');
+
+      landing.style.opacity = '0';
+      landing.style.transform = 'scale(0.98)';
+
+      setTimeout(() => {
+        landing.style.display = 'none';
+        customInterface.style.display = 'block';
+        setTimeout(() => {
+          customInterface.style.opacity = '1';
+          saveState();
+        }, 50);
+      }, 400);
+    }
+
+    function openDbModal() {
+      document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function closeDbModal() {
+      document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    function getDbConfig() {
+      return {
+        server: document.getElementById('sql-server').value,
+        database: document.getElementById('sql-db').value,
+        table: document.getElementById('sql-table').value,
+        user: document.getElementById('sql-user').value,
+        password: document.getElementById('sql-pass').value
+      };
+    }
+
+    function executePipeline(e) {
+      e.preventDefault();
+      closeDbModal();
+
+      const banner = document.getElementById('status-banner');
+      banner.style.display = 'block';
+      banner.innerHTML = t('executing_script');
+
+      const payload = getDbConfig();
+      saveState();
+
+      fetch('/api/v1/run-script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          banner.innerHTML = t('script_complete');
+          fetchNullRecords();
+        } else {
+          alert(t('err_run_script', { msg: data.message }));
+          banner.style.display = 'none';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_connect_backend'));
+        banner.style.display = 'none';
+      });
+    }
+
+    window.resetPortalState = function() {
+      rawRecords = [];
+      currentPage = 1;
+      renderTable();
+      
+      const banner = document.getElementById('status-banner');
+      if (banner) {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+      }
+    };
+
+    function fetchNullRecords() {
+      const banner = document.getElementById('status-banner');
+      const payload = getDbConfig();
+
+      fetch('/api/v1/null-records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status !== 'success') {
+          alert(t('err_load_unresolved', { msg: res.message }));
+          banner.style.display = 'none';
+          return;
+        }
+
+        rawRecords = (res.data || []).map(row => ({
+          ...row,
+          selectedGender: row.selectedGender || null
+        }));
+
+        currentPage = 1;
+        renderTable();
+        banner.style.display = 'block';
+        banner.innerHTML = t('loaded_unresolved', { n: rawRecords.length });
+        saveState();
+      })
+      .catch(err => {
+        console.error(err);
+        banner.style.display = 'none';
+        alert(t('err_fetch_unresolved'));
+      });
+    }
+
+    function autoFillExactMatches() {
+      const dbConfig = getDbConfig();
+      if (!dbConfig.database || !dbConfig.table) {
+        alert(t('need_db_table_autofill'));
+        return;
+      }
+
+      const autoBtn = document.getElementById('autoFillBtn');
+      const banner = document.getElementById('status-banner');
+
+      autoBtn.disabled = true;
+      autoBtn.innerText = t('btn_autofill_checking');
+      banner.style.display = 'block';
+      banner.innerHTML = t('scanning_null_rows');
+
+      fetch('/api/v1/auto-fill-exact-matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbConfig)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_autofill', { msg: data.message }));
+          banner.style.display = 'none';
+          return;
+        }
+
+        banner.innerHTML = t('autofill_done', { updated: data.updated_count, checked: data.candidates_checked });
+
+        fetchNullRecords();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_autofill_endpoint'));
+        banner.style.display = 'none';
+      })
+      .finally(() => {
+        autoBtn.disabled = false;
+        autoBtn.innerText = t('btn_autofill');
+      });
+    }
+
+    function rewindToSnapshot() {
+      const dbConfig = getDbConfig();
+      if (!dbConfig.database || !dbConfig.table) {
+        alert(t('need_db_table_rewind'));
+        return;
+      }
+
+      const confirmed = confirm(t('confirm_rewind'));
+      if (!confirmed) return;
+
+      const rewindBtn = document.getElementById('rewindBtn');
+      const banner = document.getElementById('status-banner');
+
+      rewindBtn.disabled = true;
+      rewindBtn.innerText = t('btn_rewind_running');
+      banner.style.display = 'block';
+      banner.innerHTML = t('rewinding');
+
+      fetch('/api/v1/rewind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbConfig)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_rewind', { msg: data.message }));
+          banner.style.display = 'none';
+          return;
+        }
+
+        banner.innerHTML = t('rewind_complete', { msg: data.message });
+
+        fetchNullRecords();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_rewind_endpoint'));
+        banner.style.display = 'none';
+      })
+      .finally(() => {
+        rewindBtn.disabled = false;
+        rewindBtn.innerText = t('btn_rewind');
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('records-body');
+      tbody.innerHTML = '';
+
+      const totalRecords = rawRecords.length;
+
+      const totalCountEl = document.getElementById('total-count-display');
+      if (totalCountEl) {
+        totalCountEl.innerText = t('total_unresolved', { n: totalRecords });
+      }
+
+      if (rawRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">${t('no_names_found')}</td></tr>`;
+        updatePaginationControls(0);
+        return;
+      }
+
+      const totalPages = Math.ceil(rawRecords.length / pageSize);
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = startIdx + pageSize;
+      const pageSlice = rawRecords.slice(startIdx, endIdx);
+
+      pageSlice.forEach((row, sliceIndex) => {
+        const globalIndex = startIdx + sliceIndex;
+        const nomDisplay = row.NOM || '';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div>${row.PRENOM || ''}</div>
+          </td>
+          <td>${nomDisplay}</td>
+          <td>
+            <select id="select-${globalIndex}" onchange="updateRowGender(${globalIndex}, this.value)">
+              <option value=""  ${!row.selectedGender ? 'selected' : ''}>${t('select_placeholder')}</option>
+              <option value="MASCULIN" ${row.selectedGender === 'MASCULIN' ? 'selected' : ''}>${t('masculin')}</option>
+              <option value="FEMININ" ${row.selectedGender === 'FEMININ' ? 'selected' : ''}>${t('feminin')}</option>
+            </select>
+            <button id="push-${globalIndex}" class="btn-push" ${row.selectedGender ? '' : 'disabled'} onclick="pushSingle(${globalIndex})">${t('push_prenom')}</button>
+            <button id="push-nom-${globalIndex}" class="btn-push-nom" ${(row.selectedGender && nomDisplay) ? '' : 'disabled'} onclick="pushNom(${globalIndex})">${t('push_nom')}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updatePaginationControls(totalPages);
+    }
+
+    function updateRowGender(globalIndex, value) {
+      if (rawRecords[globalIndex]) {
+        rawRecords[globalIndex].selectedGender = value;
+        const pushBtn = document.getElementById(`push-${globalIndex}`);
+        if (pushBtn) pushBtn.disabled = !value;
+        const pushNomBtn = document.getElementById(`push-nom-${globalIndex}`);
+        if (pushNomBtn) {
+          const hasNom = !!rawRecords[globalIndex].NOM;
+          pushNomBtn.disabled = !value || !hasNom;
+        }
+        saveState();
+      }
+    }
+
+    function changePageSize(size) {
+      pageSize = parseInt(size, 10);
+      currentPage = 1;
+      renderTable();
+      saveState();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+        saveState();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(rawRecords.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+        saveState();
+      }
+    }
+
+    function updatePaginationControls(totalPages) {
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const pageInfo = document.getElementById('page-info');
+
+      pageInfo.innerText = t('page_info', { page: totalPages === 0 ? 0 : currentPage, total: totalPages });
+      btnPrev.disabled = currentPage <= 1;
+      btnNext.disabled = currentPage >= totalPages || totalPages === 0;
+    }
+
+    function removeResolvedRows(idsToRemove) {
+      if (!idsToRemove || idsToRemove.size === 0) return;
+      rawRecords = rawRecords.filter(r => !idsToRemove.has(r.ROW_ID));
+    }
+
+    function cascadeNote(data) {
+      return data.cascade_updated_count
+        ? t('cascade_note', { n: data.cascade_updated_count })
+        : (data.cascade_error ? t('cascade_note_error', { msg: data.cascade_error }) : '');
+    }
+
+    function pushSingle(globalIndex) {
+      const row = rawRecords[globalIndex];
+      if (!row || !row.selectedGender) {
+        alert(t('err_select_gender'));
+        return;
+      }
+
+      const payload = {
+        ...getDbConfig(),
+        prenom: row.NORMALIZED_PRENOM || row.PRENOM,
+        gender: row.selectedGender,
+        row_ids: row.ROW_IDS || []
+      };
+
+      fetch('/api/v1/enrich-reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_enrich', { msg: data.message }));
+          return;
+        }
+
+        const idsToRemove = new Set([row.ROW_ID, ...(data.cascade_updated_ids || [])]);
+        removeResolvedRows(idsToRemove);
+        renderTable();
+
+        const banner = document.getElementById('status-banner');
+        const dbNote = data.updated_count
+          ? t('db_note_updated', { n: data.updated_count })
+          : (data.db_error ? t('db_note_error', { msg: data.db_error }) : '');
+        banner.style.display = 'block';
+        banner.innerHTML = t('saved_prenom', { prenom: row.PRENOM, gender: t(row.selectedGender === 'FEMININ' ? 'feminin' : 'masculin'), dbNote, cascadeNote: cascadeNote(data) });
+        saveState();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_enrich_endpoint'));
+      });
+    }
+
+    function pushNom(globalIndex) {
+      const row = rawRecords[globalIndex];
+      if (!row || !row.selectedGender) {
+        alert(t('err_select_gender'));
+        return;
+      }
+      if (!row.NOM) {
+        alert(t('err_no_nom'));
+        return;
+      }
+
+      const payload = {
+        ...getDbConfig(),
+        prenom: row.NOM,
+        gender: row.selectedGender,
+        row_ids: row.ROW_IDS || []
+      };
+
+      fetch('/api/v1/enrich-reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_enrich', { msg: data.message }));
+          return;
+        }
+
+        const idsToRemove = new Set([row.ROW_ID, ...(data.cascade_updated_ids || [])]);
+        removeResolvedRows(idsToRemove);
+        renderTable();
+
+        const banner = document.getElementById('status-banner');
+        const dbNote = data.updated_count
+          ? t('db_note_updated', { n: data.updated_count })
+          : (data.db_error ? t('db_note_error', { msg: data.db_error }) : '');
+        banner.style.display = 'block';
+        banner.innerHTML = t('saved_nom', { nom: row.NOM, gender: t(row.selectedGender === 'FEMININ' ? 'feminin' : 'masculin'), dbNote, cascadeNote: cascadeNote(data) });
+        saveState();
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_enrich_endpoint'));
+      });
+    }
+
+    async function pushAllOnPage() {
+      const pushAllBtn = document.getElementById('push-all-btn');
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, rawRecords.length);
+
+      const targetIds = [];
+      for (let i = startIdx; i < endIdx; i++) {
+        if (rawRecords[i] && rawRecords[i].selectedGender) {
+          targetIds.push(rawRecords[i].ROW_ID);
+        }
+      }
+
+      if (targetIds.length === 0) {
+        alert(t('err_no_rows_selected'));
+        return;
+      }
+
+      pushAllBtn.disabled = true;
+      pushAllBtn.innerText = t('btn_push_all_progress', { n: 0, total: targetIds.length });
+
+      let successCount = 0;
+      let cascadeTotal = 0;
+      let failCount = 0;
+
+      for (let n = 0; n < targetIds.length; n++) {
+        const rowId = targetIds[n];
+        const row = rawRecords.find(r => r.ROW_ID === rowId);
+        if (!row) {
+          pushAllBtn.innerText = `Pushing ${n + 1} / ${targetIds.length}...`;
+          continue;
+        }
+
+        const payload = {
+          ...getDbConfig(),
+          prenom: row.NORMALIZED_PRENOM || row.PRENOM,
+          gender: row.selectedGender,
+          row_ids: row.ROW_IDS || []
+        };
+
+        try {
+          const res = await fetch('/api/v1/enrich-reference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            const idsToRemove = new Set([row.ROW_ID, ...(data.cascade_updated_ids || [])]);
+            removeResolvedRows(idsToRemove);
+            cascadeTotal += data.cascade_updated_count || 0;
+            successCount++;
+          } else {
+            failCount++;
+            console.error('Push All: failed for', row.PRENOM, data.message);
+          }
+        } catch (err) {
+          failCount++;
+          console.error('Push All: failed for', row.PRENOM, err);
+        }
+
+        renderTable();
+        pushAllBtn.innerText = t('btn_push_all_progress', { n: n + 1, total: targetIds.length });
+      }
+
+      renderTable();
+      saveState();
+
+      const banner = document.getElementById('status-banner');
+      banner.style.display = 'block';
+      const cascadeSuffix = cascadeTotal ? t('cascade_note', { n: cascadeTotal }) : '';
+      banner.innerHTML = failCount
+        ? t('push_all_done_failures', { n: successCount, cascade: cascadeSuffix, fail: failCount })
+        : t('push_all_done', { n: successCount, cascade: cascadeSuffix });
+
+      pushAllBtn.disabled = false;
+      pushAllBtn.innerText = t('btn_push_all');
+    }
+
+    onLanguageChange(() => renderTable());
+  </script>
+  <script type="module">
+    import { clearSavedData } from './clearSavedData.js';
+
+    document
+        .getElementById('clear-saved-data-btn')
+        .addEventListener('click', clearSavedData);
+  </script>
+  <script>
+async function exportUnresolvedRecords() {
+    const exportBtn = document.getElementById('exportBtn');
+    
+    const dbConfig = getDbConfig();
+    const requestData = {
+        server: dbConfig.server || 'localhost',
+        database: dbConfig.database || '',
+        table: dbConfig.table || '',
+        user: dbConfig.user || '',
+        password: dbConfig.password || '',
+        pk: 'ID'
+    };
+
+    if (!requestData.database || !requestData.table) {
+        alert(t('need_db_table_export'));
+        return;
+    }
+
+    try {
+        exportBtn.disabled = true;
+        exportBtn.innerText = t('btn_export_exporting');
+
+        const response = await fetch('/api/v1/export-unresolved', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (result.status !== 'success') {
+            throw new Error(result.message || 'Failed to export records.');
+        }
+
+        if (!result.data || result.data.length === 0) {
+            alert(t('no_unresolved_export'));
+            return;
+        }
+
+        downloadCSV(result.data, `${requestData.table}_unresolved_records.csv`);
+
+    } catch (error) {
+        console.error('Export error:', error);
+        alert(t('export_failed', { msg: error.message }));
+    } finally {
+        exportBtn.disabled = false;
+        exportBtn.innerText = t('btn_export');
+    }
+}
+
+function downloadCSV(data, filename) {
+      const preferredOrder = ['ID','PRENOM', 'NOM', 'GENRE'];
+      const allKeys = Object.keys(data[0]);
+
+      const headers = [];
+      preferredOrder.forEach(preferredName => {
+          const match = allKeys.find(k => k.toUpperCase() === preferredName);
+          if (match) headers.push(match);
+      });
+      allKeys.forEach(k => {
+          if (!headers.includes(k)) headers.push(k);
+      });
+      
+      const csvRows = [];
+      csvRows.push(headers.join(','));
+
+      for (const row of data) {
+          const values = headers.map(header => {
+              let val = row[header] === null || row[header] === undefined ? '' : String(row[header]);
+              val = val.replace(/"/g, '""');
+              if (val.includes(',') || val.includes('\n') || val.includes('"')) {
+                  val = `"${val}"`;
+              }
+              return val;
+          });
+          csvRows.push(values.join(','));
+      }
+
+      const csvContent = '\uFEFF' + csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
+  </script>
+</body>
+</html>
