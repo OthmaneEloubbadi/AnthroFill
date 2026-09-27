@@ -586,14 +586,28 @@
           <label for="sql-table" data-i18n="label_sql_table">Target Table</label>
           <input type="text" id="sql-table" value="dbo.high_sample" required>
         </div>
+
         <div class="form-group">
-          <label for="sql-user" data-i18n="label_sql_user">SQL Username</label>
-          <input type="text" id="sql-user" value="sa" required>
+          <label for="auth-method">Authentication Method</label>
+          <select id="auth-method">
+            <option value="sql">SQL Authentication</option>
+            <option value="windows">Windows Authentication</option>
+          </select>
         </div>
-        <div class="form-group">
-          <label for="sql-pass" data-i18n="label_sql_pass">SQL Password</label>
-          <input type="password" id="sql-pass" placeholder="Enter SA password" required>
+
+        <div id="sql-auth-fields">
+          <div class="form-group">
+            <label for="sql-user" data-i18n="label_sql_user">SQL Username</label>
+            <input type="text" id="sql-user" value="sa">
+          </div>
+
+          <div class="form-group">
+            <label for="sql-pass" data-i18n="label_sql_pass">SQL Password</label>
+            <input type="password" id="sql-pass" placeholder="Enter SA password">
+          </div>
         </div>
+
+
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeDbModal()" data-i18n="btn_cancel">Cancel</button>
           <button type="submit" class="btn-primary" data-i18n="btn_run_fetch">Run Script & Fetch Nulls</button>
@@ -743,6 +757,11 @@
         document.getElementById('sql-table').value = saved.dbConfig.table || 'dbo.high_sample';
         document.getElementById('sql-user').value = saved.dbConfig.user || 'sa';
         document.getElementById('sql-pass').value = saved.dbConfig.password || '';
+        const trustedConnection = document.getElementById('trusted-connection');
+        trustedConnection.checked = saved.dbConfig.trusted_connection || false;
+
+        document.getElementById('sql-user').disabled = trustedConnection.checked;
+        document.getElementById('sql-pass').disabled = trustedConnection.checked;
       }
 
       if (saved.interfaceOpen) {
@@ -798,14 +817,36 @@
     }
 
     function getDbConfig() {
+      const windowsAuth = document.getElementById('auth-method').value === 'windows';
+
       return {
         server: document.getElementById('sql-server').value,
         database: document.getElementById('sql-db').value,
         table: document.getElementById('sql-table').value,
-        user: document.getElementById('sql-user').value,
-        password: document.getElementById('sql-pass').value
+        user: windowsAuth ? '' : document.getElementById('sql-user').value,
+        password: windowsAuth ? '' : document.getElementById('sql-pass').value,
+        trusted_connection: windowsAuth
       };
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const authMethod = document.getElementById('auth-method');
+      const sqlAuthFields = document.getElementById('sql-auth-fields');
+
+      function updateAuthFields() {
+        if (authMethod.value === 'windows') {
+          sqlAuthFields.style.display = 'none';
+        } else {
+          sqlAuthFields.style.display = 'block';
+        }
+      }
+
+      authMethod.addEventListener('change', updateAuthFields);
+
+      // Set initial state
+      updateAuthFields();
+    });
+
 
     function executePipeline(e) {
       e.preventDefault();
