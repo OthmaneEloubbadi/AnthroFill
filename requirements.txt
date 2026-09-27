@@ -1,4 +1,14 @@
-Flask
-flask-cors
-pyodbc
-rapidfuzz
+# Web framework
+Flask>=3.0.0
+
+# CORS support for frontend <-> backend communication
+flask-cors>=4.0.0
+
+# SQL Server connectivity
+pyodbc>=5.0.0
+
+# Fuzzy matching engine
+rapidfuzz>=3.0.0
+
+# Optional: spreadsheet reference resources
+# openpyxl>=3.1.0
