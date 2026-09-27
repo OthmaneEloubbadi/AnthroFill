@@ -70,8 +70,7 @@ venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS / Linux
 
 # 3. Dependencies
-pip install Flask Flask-Cors pyodbc rapidfuzz openpyxl
-
+pip install -r requirements.txt
 # 4. Import reference_prenom.csv into SQL Server as dbo.reference_prenom
 #    (see Reference Dataset section below)
 
