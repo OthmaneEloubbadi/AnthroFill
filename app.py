@@ -138,6 +138,19 @@ def get_db_connection(server, database, user=None, password=None):
 
     raise last_error
 
+def resolve_staging_table(table_name):
+    """Cleanly constructs target staging table name."""
+    if not table_name:
+        return 'dbo.[high_sample_STAGING]'
+
+    clean_name = (
+        table_name.replace('dbo.', '').replace('[', '').replace(']', '').strip()
+    )
+    if clean_name.lower().endswith('_staging'):
+        return f'dbo.[{clean_name}]'
+
+    return f'dbo.[{clean_name}_STAGING]'
+
 def resolve_staging_snapshot_table(table_name):
     """Cleanly constructs the rewind-snapshot table name (built by db_genreFINAL.py
     right after it (re)creates the STAGING table from the source table)."""
