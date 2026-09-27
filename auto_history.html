@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="auto_history_data_operations_portal">Auto History — Data Operations Portal</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-purple: #8b5cf6;
+      --accent-purple-hover: #7c3aed;
+      --accent-blue: #3b82f6;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    #history-view {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+
+    .status-banner {
+      display: none;
+      background-color: rgba(139, 92, 246, 0.1);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px 8px 0 0;
+      border-bottom: none;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn-page {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-page:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    select {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      outline: none;
+      margin-right: 0.5rem;
+    }
+
+    .table-container {
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: #0f172a;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .btn-push {
+      background-color: #22c55e;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-push:hover {
+      background-color: #16a34a;
+    }
+
+    .btn-push:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="history-view">
+    <div class="top-bar">
+      <h2 data-i18n="auto_fill_history_exact_reference_matches">Auto-Fill History (Exact Reference Matches)</h2>
+      <a href="index.html" class="btn-primary" data-i18n="back">Back</a>
+    </div>
+
+    <div id="history-status-banner" class="status-banner"></div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="history-page-size-select" data-i18n="show_per_page">Show per page:</label>
+        <select id="history-page-size-select" onchange="historyChangePageSize(this.value)">
+          <option value="20" data-i18n="20">20</option>
+          <option value="50" selected data-i18n="50">50</option>
+          <option value="100" data-i18n="100">100</option>
+          <option value="200" data-i18n="200">200</option>
+          
+        </select>
+      </div>
+      <div class="control-group">
+        <button id="history-btn-prev" class="btn-page" onclick="historyPrevPage()" disabled data-i18n="prev">&lt; Prev</button>
+        <span id="history-page-info" data-i18n="page_info">Page 1 of 1</span>
+        <button id="history-btn-next" class="btn-page" onclick="historyNextPage()" disabled data-i18n="next">Next &gt;</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="id">ID</th>
+            <th data-i18n="prenom">PRENOM</th>
+            <th data-i18n="nom">NOM</th>
+            <th data-i18n="genre_auto_assign">GENRE AUTO-ASSIGNÉ</th>
+            <th data-i18n="correction">Correction</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;" data-i18n="no_history_loaded">No auto-fill history loaded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script>
+    const DOP_STORAGE_KEY = 'dopPortalState';
+    const AUTO_HISTORY_STORAGE_KEY = 'dopAutoHistoryState';
+
+    let historyRecords = [];
+    let historyPage = 1;
+    let historyPageSize = 50;
+
+    function getDbConfig() {
+      try {
+        const raw = localStorage.getItem(DOP_STORAGE_KEY);
+        const saved = raw ? JSON.parse(raw) : null;
+        return (saved && saved.dbConfig) ? saved.dbConfig : {};
+      } catch (e) {
+        console.error('Failed to read DB config:', e);
+        return {};
+      }
+    }
+
+    function saveHistoryState() {
+      try {
+        const state = {
+          historyRecords: historyRecords,
+          historyPage: historyPage,
+          historyPageSize: historyPageSize
+        };
+        localStorage.setItem(AUTO_HISTORY_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save auto history state:', e);
+      }
+    }
+
+    function loadHistoryState() {
+      try {
+        const raw = localStorage.getItem(AUTO_HISTORY_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.error('Failed to load saved auto history state:', e);
+        return null;
+      }
+    }
+
+    function restoreHistoryState() {
+      const saved = loadHistoryState();
+      if (saved && Array.isArray(saved.historyRecords) && saved.historyRecords.length > 0) {
+        historyRecords = saved.historyRecords;
+        historyPage = saved.historyPage || 1;
+        historyPageSize = saved.historyPageSize || 50;
+
+        document.getElementById('history-page-size-select').value = String(historyPageSize);
+        renderHistoryTable();
+
+        const banner = document.getElementById('history-status-banner');
+        banner.style.display = 'block';
+        banner.innerHTML = t('history_restored', { n: historyRecords.length });
+
+        fetchManualAuditRecords(true);
+      } else {
+        fetchManualAuditRecords();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', restoreHistoryState);
+    window.addEventListener('beforeunload', saveHistoryState);
+
+    function fetchManualAuditRecords(silent) {
+      const banner = document.getElementById('history-status-banner');
+      if (!silent) {
+        banner.style.display = 'block';
+        banner.innerHTML = t('auto_history_loading');
+      }
+
+      fetch('/api/v1/auto-history-records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(getDbConfig())
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status !== 'success') {
+          if (!silent) {
+            alert(t('err_load_history', { msg: res.message }));
+            banner.style.display = 'none';
+          }
+          return;
+        }
+        historyRecords = res.data || [];
+        historyPage = 1;
+        renderHistoryTable();
+        banner.style.display = 'block';
+        banner.innerHTML = t('auto_history_loaded', { n: historyRecords.length });
+        saveHistoryState();
+      })
+      .catch(err => {
+        console.error(err);
+        if (!silent) {
+          alert(t('err_load_history_generic'));
+          banner.style.display = 'none';
+        }
+      });
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = '';
+
+      if (historyRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">${t('no_history_found')}</td></tr>`;
+        updateHistoryPaginationControls(0);
+        return;
+      }
+
+      const totalPages = Math.ceil(historyRecords.length / historyPageSize);
+      if (historyPage > totalPages) historyPage = totalPages;
+
+      const startIdx = (historyPage - 1) * historyPageSize;
+      const endIdx = startIdx + historyPageSize;
+      const pageSlice = historyRecords.slice(startIdx, endIdx);
+
+      pageSlice.forEach((row, sliceIndex) => {
+        const globalIndex = startIdx + sliceIndex;
+        const currentGender = (row.GENRE_CORRECT || '').toUpperCase();
+        const oppositeGender = currentGender === 'MASCULIN' ? 'FEMININ'
+          : currentGender === 'FEMININ' ? 'MASCULIN' : '';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.ID ?? ''}</td>
+          <td>${row.PRENOM || ''}</td>
+          <td>${row.NOM || ''}</td>
+          <td><strong>${row.GENRE_CORRECT || ''}</strong></td>
+          <td>
+            ${oppositeGender ? `
+              <select id="correction-select-${globalIndex}">
+                <option value="" >${t('select')}</option>
+                <option value="${oppositeGender}">${t(oppositeGender === 'FEMININ' ? 'feminin' : 'masculin')}</option>
+              </select>
+              <button id="correction-btn-${globalIndex}" class="btn-push" disabled onclick="pushCorrection(${globalIndex})">${t('push')}</button>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        if (oppositeGender) {
+          const sel = tr.querySelector(`#correction-select-${globalIndex}`);
+          const btn = tr.querySelector(`#correction-btn-${globalIndex}`);
+          sel.addEventListener('change', () => {
+            btn.disabled = !sel.value;
+          });
+        }
+      });
+
+      updateHistoryPaginationControls(totalPages);
+    }
+
+    function pushCorrection(globalIndex) {
+      const row = historyRecords[globalIndex];
+      const sel = document.getElementById(`correction-select-${globalIndex}`);
+      const btn = document.getElementById(`correction-btn-${globalIndex}`);
+      if (!row || !sel || !sel.value) {
+        alert(t('select_gender_before_push'));
+        return;
+      }
+      if (!row.PRENOM) {
+        alert(t('no_prenom_to_push'));
+        return;
+      }
+
+      const newGender = sel.value;
+      const payload = {
+        ...getDbConfig(),
+        prenom: row.PRENOM,
+        gender: newGender,
+        row_ids: row.ID != null ? [row.ID] : []
+      };
+
+      btn.disabled = true;
+      btn.innerText = t('btn_pushing');
+
+      fetch('/api/v1/enrich-reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert(t('err_push_correction', { msg: data.message }));
+          btn.disabled = false;
+          btn.innerText = t('btn_push');
+          return;
+        }
+
+        row.GENRE_CORRECT = newGender;
+        renderHistoryTable();
+        saveHistoryState();
+
+        const banner = document.getElementById('history-status-banner');
+        banner.style.display = 'block';
+        banner.innerHTML = t('correction_saved', { prenom: row.PRENOM, gender: t(newGender === 'FEMININ' ? 'feminin' : 'masculin') });
+      })
+      .catch(err => {
+        console.error(err);
+        alert(t('err_push_correction_generic'));
+        btn.disabled = false;
+        btn.innerText = t('btn_push');
+      });
+    }
+
+    function historyChangePageSize(size) {
+      historyPageSize = parseInt(size, 10);
+      historyPage = 1;
+      renderHistoryTable();
+      saveHistoryState();
+    }
+
+    function historyPrevPage() {
+      if (historyPage > 1) {
+        historyPage--;
+        renderHistoryTable();
+        saveHistoryState();
+      }
+    }
+
+    function historyNextPage() {
+      const totalPages = Math.ceil(historyRecords.length / historyPageSize);
+      if (historyPage < totalPages) {
+        historyPage++;
+        renderHistoryTable();
+        saveHistoryState();
+      }
+    }
+
+    function updateHistoryPaginationControls(totalPages) {
+      const btnPrev = document.getElementById('history-btn-prev');
+      const btnNext = document.getElementById('history-btn-next');
+      const pageInfo = document.getElementById('history-page-info');
+
+      pageInfo.innerText = t('page_info', { page: totalPages === 0 ? 0 : historyPage, total: totalPages });
+      btnPrev.disabled = historyPage <= 1;
+      btnNext.disabled = historyPage >= totalPages || totalPages === 0;
+    }
+
+    onLanguageChange(() => renderHistoryTable());
+  </script>
+</body>
+</html>
