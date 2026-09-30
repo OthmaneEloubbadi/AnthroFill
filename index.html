@@ -733,7 +733,20 @@
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (e) {
-        console.error('Failed to save session state:', e);
+        console.error('Failed to save session state (likely localStorage quota):', e);
+        // Fallback: keep the page position + config so a refresh never drops
+        // back to the landing view; the record list is re-fetched on restore.
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            dbConfig: getDbConfig(),
+            rawRecords: [],
+            currentPage: 1,
+            pageSize: pageSize,
+            interfaceOpen: document.getElementById('interface-view').style.display === 'block'
+          }));
+        } catch (e2) {
+          console.error('Fallback save also failed:', e2);
+        }
       }
     }
 
@@ -757,11 +770,12 @@
         document.getElementById('sql-table').value = saved.dbConfig.table || 'dbo.high_sample';
         document.getElementById('sql-user').value = saved.dbConfig.user || 'sa';
         document.getElementById('sql-pass').value = saved.dbConfig.password || '';
-        const trustedConnection = document.getElementById('trusted-connection');
-        trustedConnection.checked = saved.dbConfig.trusted_connection || false;
-
-        document.getElementById('sql-user').disabled = trustedConnection.checked;
-        document.getElementById('sql-pass').disabled = trustedConnection.checked;
+        const authMethod = document.getElementById('auth-method');
+        const windowsAuth = !!saved.dbConfig.trusted_connection;
+        if (authMethod) {
+          authMethod.value = windowsAuth ? 'windows' : 'sql';
+          authMethod.dispatchEvent(new Event('change'));
+        }
       }
 
       if (saved.interfaceOpen) {
@@ -778,7 +792,9 @@
         renderTable();
 
         const banner = document.getElementById('status-banner');
-        if (rawRecords.length > 0) {
+        if (rawRecords.length === 0 && saved.dbConfig && saved.dbConfig.server) {
+          fetchNullRecords();   // nothing cached locally -> reload unresolved rows from the server
+        } else if (rawRecords.length > 0) {
           banner.style.display = 'block';
           banner.innerHTML = t('session_restored', { n: rawRecords.length });
         }
